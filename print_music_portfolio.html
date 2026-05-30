@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D — Print & Music Design</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #0e0d0b;
+    --paper: #f0ead8;
+    --paper-dark: #e2d9c0;
+    --neon: #c8f53a;
+    --neon-dark: #a8d420;
+    --red: #e8322a;
+    --mono: 'Space Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --body: 'Barlow Condensed', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--mono);
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* HALFTONE PATTERN */
+  .halftone {
+    background-image: radial-gradient(circle, var(--ink) 1px, transparent 1px);
+    background-size: 8px 8px;
+  }
+  .halftone-neon {
+    background-image: radial-gradient(circle, var(--neon) 1.5px, transparent 1.5px);
+    background-size: 10px 10px;
+  }
+
+  /* TYPOGRAPHY */
+  .display { font-family: var(--display); letter-spacing: 0.02em; }
+  .mono { font-family: var(--mono); }
+  .condensed { font-family: var(--body); }
+
+  /* HEADER */
+  header {
+    border-bottom: 3px solid var(--ink);
+    background: var(--paper);
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+  }
+
+  .barcode {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 32px;
+  }
+  .barcode span {
+    display: block;
+    height: 100%;
+    background: var(--ink);
+  }
+
+  nav a {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 2px 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.1s steps(2);
+  }
+  nav a:hover { border-color: var(--neon); }
+
+  /* HERO */
+  .hero-section {
+    min-height: 100vh;
+    padding-top: 80px;
+    border-bottom: 3px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-text {
+    font-family: var(--display);
+    font-size: clamp(120px, 22vw, 340px);
+    color: transparent;
+    -webkit-text-stroke: 2px var(--paper-dark);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+  }
+
+  /* POSTER CARDS */
+  .poster-stack {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+  }
+
+  .poster-card {
+    position: absolute;
+    width: 220px;
+    border: 3px solid var(--ink);
+    cursor: grab;
+    transition: transform 0.15s steps(3), box-shadow 0.1s;
+    user-select: none;
+  }
+  .poster-card:active { cursor: grabbing; }
+  .poster-card:hover {
+    z-index: 10;
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+
+  .poster-card-inner {
+    width: 100%;
+    aspect-ratio: 2/3;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* FILTER TABS */
+  .filter-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border: 2px solid var(--ink);
+    padding: 6px 16px;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.05s steps(1), color 0.05s steps(1);
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  /* PORTFOLIO GRID */
+  .work-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0;
+  }
+
+  .work-item {
+    border: 2px solid var(--ink);
+    margin: -1px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--paper);
+  }
+
+  .work-thumb {
+    width: 100%;
+    aspect-ratio: 3/4;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .work-thumb-inner {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.2s steps(4);
+  }
+  .work-item:hover .work-thumb-inner {
+    transform: scale(1.04);
+  }
+
+  /* PRINT SPECS OVERLAY */
+  .print-specs {
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    color: var(--neon);
+    font-family: var(--mono);
+    font-size: 10px;
+    line-height: 1.6;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.1s steps(2);
+    pointer-events: none;
+  }
+  .work-item:hover .print-specs { opacity: 1; }
+
+  .specs-title {
+    font-family: var(--display);
+    font-size: 28px;
+    color: var(--neon);
+    line-height: 1;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--neon);
+    padding-bottom: 8px;
+  }
+
+  .spec-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 0;
+    border-bottom: 1px dashed rgba(200, 245, 58, 0.3);
+  }
+  .spec-key { opacity: 0.6; }
+  .spec-val { font-weight: 700; text-align: right; }
+
+  /* WORK LABEL */
+  .work-label {
+    padding: 10px 14px;
+    border-top: 2px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* TICKET STUB NAV */
+  .ticket-edge {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--ink) 0px,
+      var(--ink) 6px,
+      transparent 6px,
+      transparent 12px
+    );
+    height: 6px;
+  }
+
+  /* CONTACT / CONTRACT SECTION */
+  .contract-section {
+    border-top: 3px solid var(--ink);
+    position: relative;
+  }
+
+  .contract-paper {
+    background: #faf6e8;
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 40px;
+    position: relative;
+  }
+  .contract-paper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--red) 0, var(--red) 20px,
+      transparent 20px, transparent 24px
+    );
+  }
+
+  .contract-line {
+    border: none;
+    border-bottom: 1px solid var(--ink);
+    width: 100%;
+    background: transparent;
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 4px 2px;
+    color: var(--ink);
+    outline: none;
+    margin-bottom: 8px;
+  }
+  .contract-line::placeholder { opacity: 0.4; }
+
+  .stamp {
+    font-family: var(--display);
+    font-size: 36px;
+    color: var(--red);
+    border: 4px solid var(--red);
+    padding: 4px 16px;
+    transform: rotate(-12deg);
+    opacity: 0.85;
+    display: inline-block;
+    letter-spacing: 0.1em;
+  }
+
+  /* SEND BUTTON */
+  .send-btn {
+    font-family: var(--display);
+    font-size: 28px;
+    letter-spacing: 0.08em;
+    background: var(--neon);
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    padding: 10px 40px;
+    cursor: pointer;
+    box-shadow: 5px 5px 0 var(--ink);
+    transition: transform 0.1s steps(2), box-shadow 0.1s steps(2);
+  }
+  .send-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 var(--ink);
+  }
+  .send-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  /* NEON ACCENT BLOCK */
+  .neon-block { background: var(--neon); color: var(--ink); }
+  .ink-block { background: var(--ink); color: var(--paper); }
+
+  /* MARQUEE */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 18s linear infinite;
+  }
+  .marquee-wrap { overflow: hidden; }
+
+  /* SCROLL ANIMATION */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* DRAG */
+  .draggable { touch-action: none; }
+
+  @media (max-width: 768px) {
+    .poster-card { width: 160px; }
+    .work-grid { grid-template-columns: 1fr 1fr; }
+    .contract-paper { padding: 24px; }
+  }
+  @media (max-width: 480px) {
+    .work-grid { grid-template-columns: 1fr; }
+  }
+
+  /* HIDDEN FILTER */
+  .work-item[data-hidden="true"] {
+    display: none;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- ═══════════════════════════════════ HEADER ═══════════════════════════════════ -->
+<header>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;">
+
+    <!-- BARCODE LOGO -->
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="barcode" aria-hidden="true">
+        <span style="width:3px"></span><span style="width:1px"></span><span style="width:4px"></span><span style="width:1px"></span><span style="width:2px"></span><span style="width:5px"></span><span style="width:1px"></span><span style="width:3px"></span><span style="width:2px"></span><span style="width:1px"></span><span style="width:4px"></span><span style="width:2px"></span><span style="width:1px"></span><span style="width:3px"></span><span style="width:1px"></span><span style="width:2px"></span><span style="width:4px"></span><span style="width:1px"></span>
+      </div>
+      <div>
+        <div class="display" style="font-size:22px;line-height:1;">D</div>
+        <div class="mono" style="font-size:8px;letter-spacing:0.2em;opacity:0.5;">PRINT STUDIO</div>
+      </div>
+    </div>
+
+    <!-- NAV -->
+    <nav style="display:flex;gap:28px;align-items:center;">
+      <a href="#work">Work</a>
+      <a href="#info">Info</a>
+      <a href="#contact">Contact</a>
+      <span class="mono" style="font-size:8px;opacity:0.35;letter-spacing:0.15em;">§ LONDON</span>
+    </nav>
+
+  </div>
+  <div class="ticket-edge"></div>
+</header>
+
+
+<!-- ═══════════════════════════════════ HERO ════════════════════════════════════ -->
+<section class="hero-section">
+
+  <div class="hero-bg-text" aria-hidden="true">PRINT</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;min-height:100vh;padding-top:60px;" class="hero-grid">
+
+    <!-- LEFT: HEADLINE -->
+    <div style="padding:60px 28px 40px;display:flex;flex-direction:column;justify-content:center;border-right:3px solid var(--ink);position:relative;z-index:2;">
+
+      <div class="mono" style="font-size:10px;letter-spacing:0.2em;margin-bottom:20px;background:var(--neon);display:inline-block;padding:3px 8px;width:fit-content;">
+        EST. 2018 — LONDON, UK
+      </div>
+
+      <h1 class="display" style="font-size:clamp(72px,10vw,160px);line-height:0.9;margin-bottom:16px;">
+        GIG<br>POSTER<br>& PRINT<br>DESIGN
+      </h1>
+
+      <div style="display:flex;gap:0;margin-bottom:32px;">
+        <div class="neon-block" style="padding:6px 14px;border:2px solid var(--ink);">
+          <span class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.12em;">SCREEN PRINT</span>
+        </div>
+        <div class="ink-block" style="padding:6px 14px;border:2px solid var(--ink);margin-left:-2px;">
+          <span class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.12em;">VINYL ART</span>
+        </div>
+        <div style="padding:6px 14px;border:2px solid var(--ink);margin-left:-2px;background:var(--paper);">
+          <span class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.12em;">MERCH</span>
+        </div>
+      </div>
+
+      <p class="condensed" style="font-size:16px;max-width:380px;line-height:1.5;opacity:0.7;margin-bottom:40px;">
+        Raw, tactile design for bands, promoters, and labels who give a damn about how their print looks. No templates. No stock. Ink on paper.
+      </p>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="#work" class="send-btn" style="font-size:20px;padding:8px 28px;text-decoration:none;display:inline-block;">SEE THE WORK →</a>
+      </div>
+
+      <!-- PRINT RUN TICKER -->
+      <div class="mono" style="font-size:9px;margin-top:40px;opacity:0.5;letter-spacing:0.1em;">
+        PRINT RUN: 0247 / ∞ — CLIENT LIST: CONFIDENTIAL — TURNAROUND: 2 WEEKS
+      </div>
+
+    </div>
+
+    <!-- RIGHT: POSTER STACK -->
+    <div style="position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:500px;">
+
+      <!-- Scattered decorative halftone -->
+      <div class="halftone" style="position:absolute;bottom:0;right:0;width:200px;height:200px;opacity:0.15;"></div>
+
+      <div class="poster-stack" id="posterStack" style="position:relative;width:340px;height:460px;">
+
+        <!-- POSTER 1 -->
+        <div class="poster-card draggable" style="top:30px;left:20px;transform:rotate(-5deg);z-index:3;background:#1a1a2e;">
+          <div class="poster-card-inner" style="background:linear-gradient(160deg,#1a1a2e 0%,#16213e 100%);">
+            <div class="halftone-neon" style="position:absolute;inset:0;opacity:0.08;"></div>
+            <div class="display" style="color:var(--neon);font-size:42px;line-height:0.9;margin-top:auto;">FAT<br>LLOYD</div>
+            <div class="display" style="color:white;font-size:16px;opacity:0.7;margin-top:4px;">BRIXTON ACADEMY</div>
+            <div class="mono" style="color:var(--neon);font-size:8px;margin-top:8px;opacity:0.8;">14 NOV 2024</div>
+            <div style="position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:3px solid var(--neon);display:flex;align-items:center;justify-content:center;">
+              <div class="display" style="color:var(--neon);font-size:8px;text-align:center;line-height:1.1;">GIG<br>FLYER</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- POSTER 2 -->
+        <div class="poster-card draggable" style="top:60px;left:80px;transform:rotate(3deg);z-index:2;background:#f0ead8;">
+          <div class="poster-card-inner" style="background:var(--paper);">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0px,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 8px);"></div>
+            <div class="display" style="font-size:38px;line-height:0.9;color:var(--red);">DAVID<br>BOWIE</div>
+            <div class="display" style="font-size:16px;color:var(--ink);margin-top:6px;">ZIGGY STARDUST ERA</div>
+            <div style="position:absolute;bottom:20px;right:12px;background:var(--ink);padding:4px 8px;">
+              <span class="mono" style="color:var(--paper);font-size:7px;">A3 SCREENPRINT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- POSTER 3 -->
+        <div class="poster-card draggable" style="top:80px;left:140px;transform:rotate(-2deg);z-index:1;background:#0e0d0b;">
+          <div class="poster-card-inner" style="background:var(--ink);">
+            <div class="display" style="color:var(--paper);font-size:50px;line-height:0.85;position:absolute;bottom:30px;left:12px;">TOUR<br>2025</div>
+            <div style="position:absolute;top:12px;left:12px;right:12px;height:3px;background:var(--neon);"></div>
+            <div style="position:absolute;top:20px;left:12px;right:12px;height:1px;background:var(--neon);opacity:0.4;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Drag hint -->
+      <div class="mono" style="position:absolute;bottom:30px;right:28px;font-size:9px;opacity:0.4;letter-spacing:0.12em;">[ DRAG TO SHUFFLE ]</div>
+
+    </div>
+  </div>
+
+  <!-- MARQUEE -->
+  <div style="border-top:3px solid var(--ink);background:var(--ink);">
+    <div class="marquee-wrap" style="padding:10px 0;">
+      <div class="marquee-track">
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">SCREEN PRINT</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">VINYL ART</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">GIG POSTERS</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">ALBUM COVERS</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">MERCH DESIGN</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <!-- DUPLICATE -->
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">SCREEN PRINT</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">VINYL ART</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">GIG POSTERS</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">ALBUM COVERS</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+        <span class="display" style="color:var(--neon);font-size:28px;padding:0 32px;">MERCH DESIGN</span>
+        <span class="display" style="color:var(--paper);font-size:28px;padding:0 32px;">✦</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ═══════════════════════════════════ WORK ════════════════════════════════════ -->
+<section id="work" style="padding:60px 0;">
+
+  <!-- SECTION HEADER -->
+  <div style="padding:0 28px 40px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+    <div>
+      <div class="mono" style="font-size:9px;letter-spacing:0.2em;opacity:0.5;margin-bottom:8px;">§ 002 — SELECTED WORK</div>
+      <h2 class="display" style="font-size:clamp(48px,8vw,100px);line-height:0.9;">THE<br>MERCH TABLE</h2>
+    </div>
+
+    <!-- FILTER BUTTONS -->
+    <div style="display:flex;gap:-2px;flex-wrap:wrap;gap:0;">
+      <button class="filter-btn active" data-filter="all" onclick="filterWork(this,'all')">All Work</button>
+      <button class="filter-btn" data-filter="poster" onclick="filterWork(this,'poster')" style="margin-left:-2px;">Posters</button>
+      <button class="filter-btn" data-filter="album" onclick="filterWork(this,'album')" style="margin-left:-2px;">Album Art</button>
+      <button class="filter-btn" data-filter="merch" onclick="filterWork(this,'merch')" style="margin-left:-2px;">Merch</button>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="work-grid" id="workGrid" style="border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);">
+
+    <!-- ITEM 1 -->
+    <div class="work-item reveal" data-cat="poster">
+      <div class="work-thumb">
+        <div class="work-thumb-inner" style="background:linear-gradient(135deg,#1a1a2e 0%,#0d3b60 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;">
+          <div class="halftone-neon" style="position:absolute;inset:0;opacity:0.1;"></div>
+          <div class="display" style="color:var(--neon);font-size:56px;line-height:0.85;text-align:center;">FAT<br>LLOYD</div>
+          <div class="display" style="color:white;font-size:14px;margin-top:12px;opacity:0.7;">WORLD TOUR 2024</div>
+          <div style="margin-top:20px;width:80%;height:2px;background:var(--neon);"></div>
+          <div class="mono" style="color:var(--neon);font-size:9px;margin-top:8px;opacity:0.8;">BRIXTON / GLASGOW / MANCHESTER</div>
+        </div>
+        <div class="print-specs">
+          <div class="specs-title">FAT LLOYD TOUR</div>
+          <div class="spec-row"><span class="spec-key">METHOD</span><span class="spec-val">3-Colour Screenprint</span></div>
+          <div class="spec-row"><span class="spec-key">PAPER</span><span class="spec-val">180gsm Offset</span></div>
+          <div class="spec-row"><span class="spec-key">FORMAT</span><span class="spec-val">A2 / 420×594mm</span></div>
+          <div class="spec-row"><span class="spec-key">INKS</span><span class="spec-val">Navy · Neon · Opaque White</span></div>
+          <div class="spec-row"><span class="spec-key">EDITION</span><span class="spec-val">150 Numbered</span></div>
+          <div class="spec-row"><span class="spec-key">CLIENT</span><span class="spec-val">Fat Lloyd / Primary Talent</span></div>
+        </div>
+      </div>
+      <div class="work-label">
+        <span class="condensed" style="font-size:14px;font-weight:700;letter-spacing:0.05em;">FAT LLOYD — TOUR POSTER</span>
+        <span class="mono" style="font-size:9px;opacity:0.5;">2024</span>
+      </div>
+    </div>
+
+    <!-- ITEM 2 -->
+    <div class="work-item reveal" data-cat="poster">
+      <div class="work-thumb">
+        <div class="work-thumb-inner" style="background:var(--paper-dark);display:flex;align-items:center;justify-content:center;padding:24px;position:relative;">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.03) 0,rgba(0,0,0,0.03) 1px,transparent 1px,transparent 10px);"></div>
+          <div style="text-align:center;position:relative;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;line-height:0.85;color:var(--red);">DAVID<br>BOWIE</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--ink);margin-top:8px;">ZIGGY STARDUST TRIBUTE</div>
+            <div style="margin:16px auto;width:60px;height:60px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;">
+              <div style="font-family:'Bebas Neue',sans-serif;color:var(--paper);font-size:10px;line-height:1.2;text-align:center;">GOLD<br>FOIL</div>
+            </div>
+          </div>
+        </div>
+        <div class="print-specs">
+          <div class="specs-title">BOWIE TRIBUTE</div>
+          <div class="spec-row"><span class="spec-key">METHOD</span><span class="spec-val">Litho + Gold Foil</span></div>
+          <div class="spec-row"><span class="spec-key">PAPER</span><span class="spec-val">300gsm Uncoated</span></div>
+          <div class="spec-row"><span class="spec-key">FORMAT</span><span class="spec-val">B2 / 500×700mm</span></div>
+          <div class="spec-row"><span class="spec-key">COLOURS</span><span class="spec-val">4 + Gold Hot Foil</span></div>
+          <div class="spec-row"><span class="spec-key">FINISH</span><span class="spec-val">Soft Touch Laminate</span></div>
+          <div class="spec-row"><span class="spec-key">EDITION</span><span class="spec-val">Open / Gallery Print</span></div>
+        </div>
+      </div>
+      <div class="work-label">
+        <span class="condensed" style="font-size:14px;font-weight:700;letter-spacing:0.05em;">BOWIE — TRIBUTE POSTER</span>
+        <span class="mono" style="font-size:9px;opacity:0.5;">2023</span>
+      </div>
+    </div>
+
+    <!-- ITEM 3 — ALBUM -->
+    <div class="work-item reveal" data-cat="album">
+      <div class="work-thumb">
+        <div class="work-thumb-inner" style="background:#0e0d0b;display:flex;align-items:center;justify-content:center;padding:32px;position:relative;">
+          <!-- VINYL RECORD VISUAL -->
+          <div style="position:relative;width:180px;height:180px;">
+            <div style="width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#1a1a1a 0%,#111 40%,#0a0a0a 100%);box-shadow:0 0 0 2px #333;position:absolute;top:0;left:0;"></div>
+            <!-- Grooves -->
+            <div style="position:absolute;inset:10px;border-radius:50%;border:1px solid rgba(255,255,255,0.06);"></div>
+            <div style="position:absolute;inset:20px;border-radius:50%;border:1px solid rgba(255,255,255,0.06);"></div>
+            <div style="position:absolute;inset:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.06);"></div>
+            <div style="position:absolute;inset:40px;border-radius:50%;border:1px solid rgba(255,255,255,0.06);"></div>
+            <!-- Label -->
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70px;height:70px;border-radius:50%;background:var(--neon);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;">
+              <div class="display" style="font-size:12px;line-height:1;color:var(--ink);text-align:center;">STATIC<br>GHOST</div>
+              <div class="mono" style="font-size:7px;color:var(--ink);opacity:0.6;margin-top:3px;">LP-001</div>
+            </div>
+          </div>
+          <!-- SLEEVE edge -->
+          <div style="position:absolute;top:20px;right:24px;background:#1c1c1c;border:1px solid #333;width:30px;bottom:20px;"></div>
+        </div>
+        <div class="print-specs">
+          <div class="specs-title">STATIC GHOST LP</div>
+          <div class="spec-row"><span class="spec-key">FORMAT</span><span class="spec-val">12" Vinyl Sleeve</span></div>
+          <div class="spec-row"><span class="spec-key">METHOD</span><span class="spec-val">CMYK Offset Litho</span></div>
+          <div class="spec-row"><span class="spec-key">PAPER</span><span class="spec-val">350gsm Artboard</span></div>
+          <div class="spec-row"><span class="spec-key">FINISH</span><span class="spec-val">Gloss UV Spot</span></div>
+          <div class="spec-row"><span class="spec-key">INNER</span><span class="spec-val">Printed Poly Lined</span></div>
+          <div class="spec-row"><span class="spec-key">CLIENT</span><span class="spec-val">Static Ghost / DIY Rec.</span></div>
+        </div>
+      </div>
+      <div class="work-label">
+        <span class="condensed" style="font-size:14px;font-weight:700;letter-spacing:0.05em;">STATIC GHOST — LP SLEEVE</span>
+        <span class="mono" style="font-size:9px;opacity:0.5;">2024</span>
+      </div>
+    </div>
+
+    <!-- ITEM 4 — MERCH -->
+    <div class="work-item reveal" data-cat="merch">
+      <div class="work-thumb">
+        <div class="work-thumb-inner" style="background:#2a2a2a;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;">
+          <!-- T-SHIRT SHAPE -->
+          <div style="position:relative;width:160px;">
+            <svg viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+              <path d="M40 20 L0 60 L40 70 L40 200 L160 200 L160 70 L200 60 L160 20 Q130 10 100 12 Q70 10 40 20Z" fill="#c8f53a" stroke="#0e0d0b" stroke-width="4"/>
+              <text x="100" y="105" text-anchor="middle" font-family="Bebas Neue" font-size="28" fill="#0e0d0b">FLATLINE</text>
+              <text x="100" y="128" text-anchor="middle" font-family="Bebas Neue" font-size="14" fill="#0e0d0b" opacity="0.7">NEVER DIES TOUR</text>
+              <circle cx="100" cy="155" r="14" stroke="#0e0d0b" stroke-width="2.5" fill="none"/>
+              <line x1="100" y1="141" x2="100" y2="169" stroke="#0e0d0b" stroke-width="2.5"/>
+              <line x1="86" y1="155" x2="114" y2="155" stroke="#0e0d0b" stroke-width="2.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="print-specs">
+          <div class="specs-title">FLATLINE TEE</div>
+          <div class="spec-row"><span class="spec-key">GARMENT</span><span class="spec-val">100% Organic Cotton</span></div>
+          <div class="spec-row"><span class="spec-key">PRINT</span><span class="spec-val">2-Colour Screenprint</span></div>
+          <div class="spec-row"><span class="spec-key">INKS</span><span class="spec-val">Discharge + Puff</span></div>
+          <div class="spec-row"><span class="spec-key">PLACEMENT</span><span class="spec-val">Front + Back + Neck</span></div>
+          <div class="spec-row"><span class="spec-key">QTY</span><span class="spec-val">200 Units, 4 Colourways</span></div>
+          <div class="spec-row"><span class="spec-key">CLIENT</span><span class="spec-val">Flatline / Merch Direct</span></div>
+        </div>
+      </div>
+      <div class="work-label">
+        <span class="condensed" style="font-size:14px;font-weight:700;letter-spacing:0.05em;">FLATLINE — TOUR TEE</span>
+        <span class="mono" style="font-size:9px;opacity:0.5;">2024</span>
+      </div>
+    </div>
+
+    <!-- ITEM 5 — ALBUM -->
+    <div class="work-item reveal" data-cat="album">
+      <div class="work-thumb">
+        <div class="work-thumb-inner" style="background:var(--red);display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;">
+          <div class="halftone" style="position:absolute;inset:0;opacity:0.12;"></div>
+          <div style="text-align:center;position:relative;">
+            <div class="display" style="color:var(--paper);font-size:68px;line-height:0.85;">VOID<br>CULT</div>
+            <div class="display" style="color:var(--ink);font-size:18px;margin-top:8px;background:var(--neon);padding:2px 10px;display:inline-block;">EP: DEAD FREQUENCIES</div>
+          </div>
+          <div style="position:absolute;bottom:16px;left:16px;right:16px;border:2px dashed rgba(255,255,255,0.3);padding:6px 8px;display:flex;justify-content:space-between;">
+            <span class="mono" style="color:white;font-size:8px;">SIDE A ●</span>
+            <span class="mono" style="color:white;font-size:8px;">45 RPM</span>
+          </div>
+        </div>
+        <div class="print-specs">
+          <div class="specs-title">VOID CULT EP</div>
+          <div class="spec-row"><span class="spec-key">FORMAT</span><span class="spec-val">7" Single + Digital</span></div>
+          <div class="spec-row"><span class="spec-key">METHOD</span><span class="spec-val">2-Colour Riso</span></div>
+          <div class="spec-row"><span class="spec-key">PAPER</span><span class="spec-val">170gsm Fedrigoni</span></div>
+          <div class="spec-row"><span class="spec-key">COLOURS</span><span class="spec-val">Fluro Pink + Black</span></div>
+          <div class="spec-row"><span class="spec-key">EDITION</span><span class="spec-val">300 Copies, Hand Numbered</span></div>
+          <div class="spec-row"><span class="spec-key">CLIENT</span><span class="spec-val">Void Cult / Self-Released</span></div>
+        </div>
+      </div>
+      <div class="work-label">
+        <span class="condensed" style="font-size:14px;font-weight:700;letter-spacing:0.05em;">VOID CULT — 7" SLEEVE</span>
+        <span class="mono" style="font-size:9px;opacity:0.5;">2023</span>
+      </div>
+    </div>
+
+    <!-- ITEM 6 — POSTER -->
+    <div class="work-item reveal" data-cat="poster">
+      <div class="work-thumb">
+        <div class="work-thumb-inner" style="background:#f5e642;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:12px;background:repeating-linear-gradient(90deg,var(--ink) 0,var(--ink) 20px,transparent 20px,transparent 24px);"></div>
+          <div style="text-align:center;">
+            <div class="display" style="font-size:20px;color:var(--ink);letter-spacing:0.05em;">NEON FUNERAL PRESENTS</div>
+            <div class="display" style="font-size:64px;color:var(--ink);line-height:0.85;margin:8px 0;">THREE<br>NIGHTS<br>ONLY</div>
+            <div class="mono" style="font-size:9px;color:var(--ink);opacity:0.6;">THE HOPE · BRIGHTON</div>
+          </div>
+        </div>
+        <div class="print-specs">
+          <div class="specs-title">NEON FUNERAL</div>
+          <div class="spec-row"><span class="spec-key">METHOD</span><span class="spec-val">Spot UV + Letterpress</span></div>
+          <div class="spec-row"><span class="spec-key">PAPER</span><span class="spec-val">300gsm Invercote</span></div>
+          <div class="spec-row"><span class="spec-key">FORMAT</span><span class="spec-val">A3 / 297×420mm</span></div>
+          <div class="spec-row"><span class="spec-key">INKS</span><span class="spec-val">1 PMS + Spot UV Clear</span></div>
+          <div class="spec-row"><span class="spec-key">PRESS</span><span class="spec-val">Heidelberg Platen</span></div>
+          <div class="spec-row"><span class="spec-key">EDITION</span><span class="spec-val">80 Signed Copies</span></div>
+        </div>
+      </div>
+      <div class="work-label">
+        <span class="condensed" style="font-size:14px;font-weight:700;letter-spacing:0.05em;">NEON FUNERAL — RESIDENCY</span>
+        <span class="mono" style="font-size:9px;opacity:0.5;">2024</span>
+      </div>
+    </div>
+
+    <!-- ITEM 7 — MERCH -->
+    <div class="work-item reveal" data-cat="merch">
+      <div class="work-thumb">
+        <div class="work-thumb-inner" style="background:#1a1a2e;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;">
+          <div style="text-align:center;">
+            <!-- PATCH design -->
+            <div style="width:140px;height:140px;border-radius:50%;border:5px solid var(--neon);background:#111;margin:0 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;">
+              <div style="position:absolute;inset:8px;border-radius:50%;border:2px dashed rgba(200,245,58,0.3);"></div>
+              <div class="display" style="color:var(--neon);font-size:28px;line-height:1;">DEAD<br>STATIC</div>
+              <div class="mono" style="color:var(--neon);font-size:8px;opacity:0.7;margin-top:4px;">EST. MMXVIII</div>
+            </div>
+            <div class="mono" style="color:var(--paper);font-size:9px;margin-top:12px;opacity:0.6;">EMBROIDERED PATCH / ENAMEL PIN</div>
+          </div>
+        </div>
+        <div class="print-specs">
+          <div class="specs-title">DEAD STATIC</div>
+          <div class="spec-row"><span class="spec-key">TYPE</span><span class="spec-val">Woven Patch + Enamel Pin</span></div>
+          <div class="spec-row"><span class="spec-key">SIZE</span><span class="spec-val">80mm Diameter</span></div>
+          <div class="spec-row"><span class="spec-key">COLOURS</span><span class="spec-val">5 Thread Colours</span></div>
+          <div class="spec-row"><span class="spec-key">BACKING</span><span class="spec-val">Iron-On + Clasp</span></div>
+          <div class="spec-row"><span class="spec-key">QTY</span><span class="spec-val">500 Patches / 200 Pins</span></div>
+          <div class="spec-row"><span class="spec-key">CLIENT</span><span class="spec-val">Dead Static Records</span></div>
+        </div>
+      </div>
+      <div class="work-label">
+        <span class="condensed" style="font-size:14px;font-weight:700;letter-spacing:0.05em;">DEAD STATIC — PATCH & PIN</span>
+        <span class="mono" style="font-size:9px;opacity:0.5;">2023</span>
+      </div>
+    </div>
+
+    <!-- ITEM 8 — ALBUM -->
+    <div class="work-item reveal" data-cat="album">
+      <div class="work-thumb">
+        <div class="work-thumb-inner" style="background:#eee9d8;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(0,0,0,0.02) 0,rgba(0,0,0,0.02) 2px,transparent 2px,transparent 12px);"></div>
+          <!-- TAPE CASSETTE -->
+          <div style="background:#111;border-radius:8px;padding:16px 20px;width:200px;position:relative;box-shadow:4px 4px 0 var(--ink);">
+            <div class="display" style="color:var(--neon);font-size:14px;">CASSETTE SERIES 04</div>
+            <div class="display" style="color:white;font-size:24px;line-height:0.9;margin:6px 0;">HAUNT ME<br>HARDER</div>
+            <div style="display:flex;justify-content:center;gap:16px;margin-top:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:#1a1a1a;border:2px solid #333;display:flex;align-items:center;justify-content:center;">
+                <div style="width:8px;height:8px;background:var(--neon);border-radius:50%;"></div>
+              </div>
+              <div style="width:32px;height:32px;border-radius:50%;background:#1a1a1a;border:2px solid #333;display:flex;align-items:center;justify-content:center;">
+                <div style="width:8px;height:8px;background:var(--neon);border-radius:50%;"></div>
+              </div>
+            </div>
+            <div style="height:4px;background:#222;margin-top:8px;border-radius:2px;"><div style="width:40%;height:100%;background:var(--neon);border-radius:2px;"></div></div>
+          </div>
+        </div>
+        <div class="print-specs">
+          <div class="specs-title">HAUNT ME HARDER</div>
+          <div class="spec-row"><span class="spec-key">FORMAT</span><span class="spec-val">Cassette J-Card</span></div>
+          <div class="spec-row"><span class="spec-key">METHOD</span><span class="spec-val">Digital + Spot Varnish</span></div>
+          <div class="spec-row"><span class="spec-key">PAPER</span><span class="spec-val">250gsm Silk</span></div>
+          <div class="spec-row"><span class="spec-key">TAPE</span><span class="spec-val">Black Shell, Clear Shell</span></div>
+          <div class="spec-row"><span class="spec-key">INCLUDES</span><span class="spec-val">OBI Strip + Download Card</span></div>
+          <div class="spec-row"><span class="spec-key">EDITION</span><span class="spec-val">75 Copies</span></div>
+        </div>
+      </div>
+      <div class="work-label">
+        <span class="condensed" style="font-size:14px;font-weight:700;letter-spacing:0.05em;">HAUNT ME HARDER — CASSETTE</span>
+        <span class="mono" style="font-size:9px;opacity:0.5;">2024</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════ INFO ════════════════════════════════════ -->
+<section id="info" style="border-top:3px solid var(--ink);padding:60px 28px;">
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;" class="info-grid">
+
+    <!-- LEFT: INTRO -->
+    <div style="padding-right:40px;border-right:3px solid var(--ink);">
+      <div class="mono" style="font-size:9px;letter-spacing:0.2em;opacity:0.5;margin-bottom:16px;">§ 003 — ABOUT</div>
+      <h2 class="display" style="font-size:clamp(40px,6vw,80px);line-height:0.9;margin-bottom:28px;">THE<br>STUDIO</h2>
+
+      <p class="condensed" style="font-size:17px;line-height:1.6;max-width:440px;margin-bottom:24px;">
+        Independent print and music design studio based in London. Working directly with bands, promoters, and independent labels to produce work that feels physical, intentional, and worth keeping.
+      </p>
+      <p class="condensed" style="font-size:17px;line-height:1.6;max-width:440px;margin-bottom:40px;opacity:0.7;">
+        Rooted in DIY print culture — screenprinting, risograph, letterpress, and hand-crafted process. Every project is built to exist in the real world, not just a feed.
+      </p>
+
+      <!-- CAPABILITIES LIST -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid var(--ink);">
+        <div style="padding:12px 16px;border-bottom:2px solid var(--ink);border-right:1px solid var(--ink);">
+          <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:4px;">01</div>
+          <div class="condensed" style="font-weight:700;font-size:14px;">GIG POSTERS</div>
+        </div>
+        <div style="padding:12px 16px;border-bottom:2px solid var(--ink);border-left:1px solid var(--ink);">
+          <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:4px;">02</div>
+          <div class="condensed" style="font-weight:700;font-size:14px;">ALBUM ART</div>
+        </div>
+        <div style="padding:12px 16px;border-bottom:2px solid var(--ink);border-right:1px solid var(--ink);">
+          <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:4px;">03</div>
+          <div class="condensed" style="font-weight:700;font-size:14px;">MERCH DESIGN</div>
+        </div>
+        <div style="padding:12px 16px;border-bottom:2px solid var(--ink);border-left:1px solid var(--ink);">
+          <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:4px;">04</div>
+          <div class="condensed" style="font-weight:700;font-size:14px;">ZINE / PRINT</div>
+        </div>
+        <div style="padding:12px 16px;border-right:1px solid var(--ink);">
+          <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:4px;">05</div>
+          <div class="condensed" style="font-weight:700;font-size:14px;">BRAND ID</div>
+        </div>
+        <div style="padding:12px 16px;border-left:1px solid var(--ink);">
+          <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:4px;">06</div>
+          <div class="condensed" style="font-weight:700;font-size:14px;">ILLUSTRATION</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: PROCESS / STATS -->
+    <div style="padding-left:40px;display:flex;flex-direction:column;gap:32px;">
+
+      <div>
+        <div class="mono" style="font-size:9px;letter-spacing:0.2em;opacity:0.5;margin-bottom:16px;">§ PRINT PROCESS</div>
+        <div style="display:flex;flex-direction:column;gap:0;border:2px solid var(--ink);">
+          <div style="padding:14px 16px;background:var(--ink);color:var(--paper);display:flex;justify-content:space-between;align-items:center;">
+            <span class="condensed" style="font-weight:700;font-size:14px;letter-spacing:0.05em;">PHASE</span>
+            <span class="condensed" style="font-weight:700;font-size:14px;letter-spacing:0.05em;">TIMELINE</span>
+          </div>
+          <div style="padding:10px 16px;border-bottom:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;">
+            <span class="condensed" style="font-size:14px;">Brief + Direction</span>
+            <span class="mono" style="font-size:10px;opacity:0.6;">DAY 1–2</span>
+          </div>
+          <div style="padding:10px 16px;border-bottom:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;background:rgba(200,245,58,0.1);">
+            <span class="condensed" style="font-size:14px;">Design Development</span>
+            <span class="mono" style="font-size:10px;opacity:0.6;">DAY 3–7</span>
+          </div>
+          <div style="padding:10px 16px;border-bottom:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;">
+            <span class="condensed" style="font-size:14px;">Revisions (×2)</span>
+            <span class="mono" style="font-size:10px;opacity:0.6;">DAY 8–10</span>
+          </div>
+          <div style="padding:10px 16px;display:flex;justify-content:space-between;align-items:center;background:var(--neon);">
+            <span class="condensed" style="font-weight:700;font-size:14px;">Print-Ready Delivery</span>
+            <span class="mono" style="font-size:10px;font-weight:700;">DAY 14</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid var(--ink);">
+        <div style="padding:20px;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);">
+          <div class="display" style="font-size:56px;line-height:1;color:var(--neon);-webkit-text-stroke:2px var(--ink);">7+</div>
+          <div class="mono" style="font-size:9px;opacity:0.6;margin-top:4px;">YEARS IN PRINT</div>
+        </div>
+        <div style="padding:20px;border-bottom:1px solid var(--ink);">
+          <div class="display" style="font-size:56px;line-height:1;color:var(--neon);-webkit-text-stroke:2px var(--ink);">200+</div>
+          <div class="mono" style="font-size:9px;opacity:0.6;margin-top:4px;">PROJECTS SHIPPED</div>
+        </div>
+        <div style="padding:20px;border-right:1px solid var(--ink);">
+          <div class="display" style="font-size:56px;line-height:1;color:var(--neon);-webkit-text-stroke:2px var(--ink);">40+</div>
+          <div class="mono" style="font-size:9px;opacity:0.6;margin-top:4px;">BANDS + LABELS</div>
+        </div>
+        <div style="padding:20px;">
+          <div class="display" style="font-size:56px;line-height:1;color:var(--neon);-webkit-text-stroke:2px var(--ink);">0</div>
+          <div class="mono" style="font-size:9px;opacity:0.6;margin-top:4px;">STOCK TEMPLATES USED</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ═══════════════════════════════════ CONTACT ═════════════════════════════════ -->
+<section id="contact" class="contract-section" style="padding:60px 28px;">
+
+  <div class="mono" style="font-size:9px;letter-spacing:0.2em;opacity:0.5;margin-bottom:40px;">§ 004 — CONTACT / NEW PROJECTS</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;" class="contact-grid">
+
+    <!-- LEFT: CONTRACT FORM -->
+    <div>
+      <h2 class="display" style="font-size:clamp(40px,7vw,90px);line-height:0.9;margin-bottom:32px;">LET'S<br>MAKE<br>SOMETHING<br>REAL.</h2>
+
+      <div class="contract-paper">
+        <!-- LETTERHEAD -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid var(--ink);">
+          <div>
+            <div class="display" style="font-size:24px;">PROJECT BRIEF</div>
+            <div class="mono" style="font-size:9px;opacity:0.5;margin-top:2px;">FORM NO. 001-A</div>
+          </div>
+          <div class="mono" style="font-size:9px;opacity:0.4;text-align:right;">
+            DATE: ___/___/______<br>
+            REF: PRJ-_______
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label class="mono" style="font-size:9px;letter-spacing:0.15em;opacity:0.6;display:block;margin-bottom:4px;">YOUR NAME / BAND / LABEL</label>
+          <input class="contract-line" type="text" placeholder="e.g. Fat Lloyd, DIY Records...">
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label class="mono" style="font-size:9px;letter-spacing:0.15em;opacity:0.6;display:block;margin-bottom:4px;">EMAIL ADDRESS</label>
+          <input class="contract-line" type="email" placeholder="your@email.com">
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label class="mono" style="font-size:9px;letter-spacing:0.15em;opacity:0.6;display:block;margin-bottom:4px;">PROJECT TYPE</label>
+          <div style="display:flex;gap:-2px;flex-wrap:wrap;gap:0;margin-top:4px;">
+            <button class="filter-btn" style="font-size:9px;padding:4px 10px;" onclick="toggleProjectType(this)">Poster</button>
+            <button class="filter-btn" style="font-size:9px;padding:4px 10px;margin-left:-2px;" onclick="toggleProjectType(this)">Album Art</button>
+            <button class="filter-btn" style="font-size:9px;padding:4px 10px;margin-left:-2px;" onclick="toggleProjectType(this)">Merch</button>
+            <button class="filter-btn" style="font-size:9px;padding:4px 10px;margin-left:-2px;" onclick="toggleProjectType(this)">Other</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <label class="mono" style="font-size:9px;letter-spacing:0.15em;opacity:0.6;display:block;margin-bottom:4px;">TELL ME ABOUT THE PROJECT</label>
+          <textarea class="contract-line" rows="4" style="resize:none;border-bottom:none;border:1px solid var(--ink);padding:8px;width:100%;background:transparent;font-family:var(--mono);font-size:12px;outline:none;" placeholder="Gig date, venue, vibe, reference points, budget..."></textarea>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <button class="send-btn" onclick="handleSend(this)">SEND IT →</button>
+          <div class="mono" style="font-size:8px;opacity:0.4;max-width:140px;line-height:1.5;text-align:right;">
+            I'll respond within<br>48 hours. No spam. Ever.
+          </div>
+        </div>
+
+        <!-- RUBBER STAMP -->
+        <div style="position:absolute;bottom:20px;right:20px;transform:rotate(-8deg);" aria-hidden="true">
+          <div class="stamp" style="font-size:18px;padding:3px 10px;">AVAILABLE NOW</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: DIRECT CONTACT + SOCIALS -->
+    <div style="display:flex;flex-direction:column;gap:32px;">
+
+      <!-- CONTACT DETAILS AS RECEIPT -->
+      <div style="border:2px solid var(--ink);background:#faf6e8;box-shadow:5px 5px 0 var(--ink);">
+        <div style="background:var(--ink);color:var(--paper);padding:12px 20px;">
+          <div class="display" style="font-size:18px;letter-spacing:0.1em;">DIRECT CONTACT</div>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:2px;">EMAIL</div>
+            <a href="mailto:hello@dstudio.co" class="condensed" style="font-size:18px;font-weight:700;color:var(--ink);text-decoration:none;border-bottom:2px solid var(--neon);">hello@dstudio.co</a>
+          </div>
+          <div style="border-top:1px dashed rgba(0,0,0,0.2);padding-top:12px;">
+            <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:2px;">INSTAGRAM</div>
+            <a href="#" class="condensed" style="font-size:18px;font-weight:700;color:var(--ink);text-decoration:none;border-bottom:2px solid var(--neon);">@dstudio_print</a>
+          </div>
+          <div style="border-top:1px dashed rgba(0,0,0,0.2);padding-top:12px;">
+            <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:2px;">BASED</div>
+            <span class="condensed" style="font-size:18px;font-weight:700;">London, UK</span>
+          </div>
+          <div style="border-top:1px dashed rgba(0,0,0,0.2);padding-top:12px;">
+            <div class="mono" style="font-size:9px;opacity:0.5;margin-bottom:2px;">CURRENT STATUS</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:8px;height:8px;background:var(--neon);border-radius:50%;border:2px solid var(--ink);animation:pulse 2s steps(4) infinite;" id="statusDot"></div>
+              <span class="condensed" style="font-size:16px;font-weight:700;" id="statusText">TAKING NEW PROJECTS</span>
+            </div>
+          </div>
+        </div>
+        <!-- RECEIPT PERFORATIONS -->
+        <div style="border-top:1px dashed var(--ink);padding:10px 20px;display:flex;justify-content:space-between;">
+          <span class="mono" style="font-size:8px;opacity:0.4;">THANK YOU FOR YOUR ENQUIRY</span>
+          <span class="mono" style="font-size:8px;opacity:0.4;">★★★★★</span>
+        </div>
+      </div>
+
+      <!-- NEON CALLOUT -->
+      <div style="background:var(--neon);border:3px solid var(--ink);padding:28px;box-shadow:5px 5px 0 var(--ink);">
+        <div class="display" style="font-size:32px;line-height:0.9;margin-bottom:12px;">RUSH JOB?</div>
+        <p class="condensed" style="font-size:15px;line-height:1.5;">Tight turnaround? Express rate applies for sub-7-day briefs. Drop me a line and we'll work it out.</p>
+        <div class="mono" style="font-size:9px;margin-top:16px;opacity:0.6;">EXPRESS RATE: +30% // MIN 3 DAYS</div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ═══════════════════════════════════ FOOTER ══════════════════════════════════ -->
+<footer style="background:var(--ink);color:var(--paper);border-top:3px solid var(--ink);">
+  <div style="padding:20px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div class="display" style="font-size:20px;letter-spacing:0.05em;color:var(--neon);">D — PRINT STUDIO</div>
+    <div class="mono" style="font-size:9px;opacity:0.4;letter-spacing:0.12em;">© 2025 — ALL PRINTS RESERVED — LONDON, UK</div>
+    <div class="barcode" aria-hidden="true" style="opacity:0.3;">
+      <span style="width:3px;background:var(--paper)"></span><span style="width:1px;background:var(--paper)"></span><span style="width:4px;background:var(--paper)"></span><span style="width:2px;background:var(--paper)"></span><span style="width:1px;background:var(--paper)"></span><span style="width:5px;background:var(--paper)"></span><span style="width:1px;background:var(--paper)"></span><span style="width:3px;background:var(--paper)"></span>
+    </div>
+  </div>
+</footer>
+
+
+<style>
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @media (max-width: 768px) {
+    .hero-grid { grid-template-columns: 1fr !important; }
+    .info-grid { grid-template-columns: 1fr !important; }
+    .info-grid > div:first-child { padding-right: 0 !important; border-right: none !important; border-bottom: 3px solid var(--ink); padding-bottom: 40px; }
+    .info-grid > div:last-child { padding-left: 0 !important; }
+    .contact-grid { grid-template-columns: 1fr !important; }
+  }
+</style>
+
+<script>
+  // ── POSTER DRAG ──────────────────────────────────────────────────────────────
+  document.querySelectorAll('.draggable').forEach(card => {
+    let isDragging = false, startX, startY, origX = 0, origY = 0;
+
+    card.addEventListener('mousedown', e => {
+      isDragging = true;
+      startX = e.clientX - origX;
+      startY = e.clientY - origY;
+      card.style.zIndex = 20;
+      card.style.transition = 'none';
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      origX = e.clientX - startX;
+      origY = e.clientY - startY;
+      const rot = parseFloat(card.style.transform.replace(/[^-\d.]/g,'')) || 0;
+      card.style.transform = `translate(${origX}px, ${origY}px) rotate(${rot}deg)`;
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      card.style.zIndex = '';
+      card.style.transition = 'transform 0.2s steps(4)';
+    });
+
+    // Touch
+    card.addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      isDragging = true;
+      startX = t.clientX - origX;
+      startY = t.clientY - origY;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', e => {
+      if (!isDragging) return;
+      const t = e.touches[0];
+      origX = t.clientX - startX;
+      origY = t.clientY - startY;
+      const rot = parseFloat(card.style.transform.replace(/[^-\d.]/g,'')) || 0;
+      card.style.transform = `translate(${origX}px, ${origY}px) rotate(${rot}deg)`;
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => { isDragging = false; });
+  });
+
+  // ── SCROLL REVEAL ────────────────────────────────────────────────────────────
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+
+  // ── FILTER ───────────────────────────────────────────────────────────────────
+  function filterWork(btn, cat) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.work-item').forEach(item => {
+      if (cat === 'all' || item.dataset.cat === cat) {
+        item.dataset.hidden = 'false';
+        item.style.display = '';
+      } else {
+        item.dataset.hidden = 'true';
+      }
+    });
+  }
+
+  // ── PROJECT TYPE TOGGLE ──────────────────────────────────────────────────────
+  function toggleProjectType(btn) {
+    btn.classList.toggle('active');
+  }
+
+  // ── SEND HANDLER ─────────────────────────────────────────────────────────────
+  function handleSend(btn) {
+    btn.textContent = 'SENT ✓';
+    btn.style.background = 'var(--ink)';
+    btn.style.color = 'var(--neon)';
+    setTimeout(() => {
+      btn.textContent = 'SEND IT →';
+      btn.style.background = 'var(--neon)';
+      btn.style.color = 'var(--ink)';
+    }, 2500);
+  }
+
+  // ── SMOOTH SCROLL ────────────────────────────────────────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
